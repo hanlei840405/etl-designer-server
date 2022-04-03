@@ -1,0 +1,144 @@
+server:
+  port: 8081
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS
+spring:
+  application:
+    name: etl-designer-server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/nxin_etl?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+    username: root
+    password: 12345678
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 5
+    minIdle: 5
+    maxActive: 200
+    # 配置获取连接等待超时的时间
+    maxWait: 60000
+    # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+    timeBetweenEvictionRunsMillis: 60000
+    # 配置一个连接在池中最小生存的时间，单位是毫秒
+    minEvictableIdleTimeMillis: 300000
+    # 用来检测连接是否有效的sql，要求是一个查询语句
+    validationQuery: SELECT 1
+    # 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+    testWhileIdle: true
+    # 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+    testOnBorrow: false
+    # 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+    testOnReturn: false
+    # 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql下建议关闭。
+    poolPreparedStatements: true
+    # 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。
+    max-pool-prepared-statement-per-connection-size: 50
+    #配置监控统计拦截的filters，stat:监控统计、log4j：日志记录、wall：防御sql注入
+    #如果允许时报错  java.lang.ClassNotFoundException: org.apache.log4j.Priority
+    #则导入 log4j 依赖即可，Maven 地址：https://mvnrepository.com/artifact/log4j/log4j
+    filters: stat,wall,log4j
+    # 合并多个DruidDataSource的监控数据
+    useGlobalDataSourceStat: true
+    # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: none
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        format_sql: true
+    show-sql: true
+    open-in-view: true
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+  quartz:
+    job-store-type: jdbc
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ZONE-1
+            instanceId: AUTO
+            batchTriggerAcquisitionMaxCount: 5
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: qrtz_
+            isClustered: true
+            clusterCheckinInterval: 10000
+            useProperties: false
+            acquireTriggersWithinLock: true
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 10
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
+  mail:
+    host:
+    port:
+    username:
+    password:
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          port:
+          ssl:
+            enable: true
+          starttls:
+            enable: true
+            required: true
+    from:
+    forgotSubject: 新恩数造找回密码
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+  data:
+    redis:
+      repositories:
+        enabled: false
+jwt:
+  secret: nxin
+  expirationDateInMs: 0
+  refreshExpirationDateInMs: 9000000
+attachment:
+  dir: ${user.home}/.etl-designer/attachments/
+production:
+  dir: ${user.home}/.etl-designer/production/
+publish:
+  dir: ${user.home}/.etl-designer/publish/
+dev:
+  dir: ${user.home}/.etl-designer/dev/
+setting:
+  trans:
+    records-size: 10000
+    row-size: 50000
+    feedback: true
+    thread-manage-priority: true
+    engine: Normal
+etl:
+  log:
+    datasource:
+      name: nxin_etl
+      type: Mysql
+      access: JDBC
+      host: localhost
+      port: 3306
+      schema: nxin_etl
+      username: root
+      password: 12345678
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
+
+
+
