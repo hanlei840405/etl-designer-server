@@ -46,4 +46,42 @@ public class MetadataService {
             metadataRepository.saveAll(insertOrUpdateList);
         }
     }
+
+    public String generateSql(String tableName, List<Metadata> metadataList) {
+        StringBuilder builder = new StringBuilder("create table ");
+        builder.append("`").append(tableName).append("` (").append("\n");
+        List<String> pkList = new ArrayList<>(0);
+        metadataList.forEach(metadata -> {
+            builder.append("`").append(metadata.getColumnCode()).append("`").append(" ").append(metadata.getColumnCategory());
+            if (metadata.getColumnDecimal() > 0) {
+                builder.append("(").append(metadata.getColumnLength()).append(",").append(metadata.getColumnDecimal()).append(")");
+            } else if (metadata.getColumnLength() > 0) {
+                builder.append("(").append(metadata.getColumnLength()).append(")");
+            }
+            if (metadata.isNotNull()) {
+                builder.append(" ").append("not null");
+            } else {
+                builder.append(" ").append("default null");
+            }
+            if (metadata.isAutoIncrement()) {
+                builder.append(" ").append("auto_increment");
+            }
+            builder.append(",\n");
+            if (metadata.isPrimaryKey()) {
+                pkList.add(metadata.getColumnCode());
+            }
+        });
+        if (!pkList.isEmpty()) {
+            builder.append("primary key (");
+            pkList.forEach(pk -> {
+                builder.append("`").append(pk).append("`").append(",");
+            });
+            builder.deleteCharAt(builder.lastIndexOf(","));
+            builder.append(")");
+        } else {
+            builder.deleteCharAt(builder.lastIndexOf(","));
+        }
+        builder.append(");");
+        return builder.toString();
+    }
 }

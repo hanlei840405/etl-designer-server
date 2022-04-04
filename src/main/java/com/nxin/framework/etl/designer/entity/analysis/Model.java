@@ -21,6 +21,8 @@ public class Model extends BaseEntity implements Serializable {
     @Column
     private String name;
     @Column
+    private String frequency;
+    @Column
     private String description;
     @ManyToOne
     @JoinColumn(name = "tenant_id")

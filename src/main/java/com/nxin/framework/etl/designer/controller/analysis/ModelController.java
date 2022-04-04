@@ -12,6 +12,7 @@ import com.nxin.framework.etl.designer.entity.basic.User;
 import com.nxin.framework.etl.designer.entity.designer.Datasource;
 import com.nxin.framework.etl.designer.enums.Constant;
 import com.nxin.framework.etl.designer.service.DynamicQueryDataService;
+import com.nxin.framework.etl.designer.service.analysis.MetadataService;
 import com.nxin.framework.etl.designer.service.analysis.ModelService;
 import com.nxin.framework.etl.designer.service.basic.ProjectService;
 import com.nxin.framework.etl.designer.service.basic.UserService;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +44,8 @@ public class ModelController {
     private ProjectService projectService;
     @Autowired
     private DynamicQueryDataService dynamicQueryDataService;
+    @Autowired
+    private MetadataService metadataService;
 
     private BeanConverter<ModelVo, Model> modelConverter = new ModelConverter();
 
@@ -120,41 +122,7 @@ public class ModelController {
         Model persisted = modelService.one(id, loginUser.getTenant().getId());
         if (persisted != null && persisted.getProject() != null && loginUser.getProjects().contains(persisted.getProject())) {
             List<Metadata> metadataList = persisted.getMetadataList().stream().filter(metadata -> metadata.getStatus().equals(Constant.ACTIVE)).collect(Collectors.toList());
-            StringBuilder builder = new StringBuilder("create table ");
-            builder.append("`").append(persisted.getCode()).append("` (").append("\n");
-            List<String> pkList = new ArrayList<>(0);
-            metadataList.forEach(metadata -> {
-                builder.append("`").append(metadata.getColumnCode()).append("`").append(" ").append(metadata.getColumnCategory());
-                if (metadata.getColumnDecimal() > 0) {
-                    builder.append("(").append(metadata.getColumnLength()).append(",").append(metadata.getColumnDecimal()).append(")");
-                } else if (metadata.getColumnLength() > 0) {
-                    builder.append("(").append(metadata.getColumnLength()).append(")");
-                }
-                if (metadata.isNotNull()) {
-                    builder.append(" ").append("not null");
-                } else {
-                    builder.append(" ").append("default null");
-                }
-                if (metadata.isAutoIncrement()) {
-                    builder.append(" ").append("auto_increment");
-                }
-                builder.append(",\n");
-                if (metadata.isPrimaryKey()) {
-                    pkList.add(metadata.getColumnCode());
-                }
-            });
-            if (!pkList.isEmpty()) {
-                builder.append("primary key (");
-                pkList.forEach(pk -> {
-                    builder.append("`").append(pk).append("`").append(",");
-                });
-                builder.deleteCharAt(builder.lastIndexOf(","));
-                builder.append(")");
-            } else {
-                builder.deleteCharAt(builder.lastIndexOf(","));
-            }
-            builder.append(");");
-            return ResponseEntity.ok(builder.toString());
+            return ResponseEntity.ok(metadataService.generateSql(persisted.getCode(), metadataList));
         }
         return ResponseEntity.status(Constant.EXCEPTION_UNAUTHORIZED).build();
     }
@@ -164,46 +132,12 @@ public class ModelController {
         User loginUser = userService.one(principal.getName());
         Model persisted = modelService.one(id, loginUser.getTenant().getId());
         if (persisted != null && persisted.getProject() != null && loginUser.getProjects().contains(persisted.getProject())) {
-            List<Metadata> metadataList = persisted.getMetadataList().stream().filter(metadata -> metadata.getStatus().equals(Constant.ACTIVE)).collect(Collectors.toList());
-            StringBuilder builder = new StringBuilder("create table ");
-            builder.append("`").append(persisted.getCode()).append("` (").append("\n");
-            List<String> pkList = new ArrayList<>(0);
-            metadataList.forEach(metadata -> {
-                builder.append("`").append(metadata.getColumnCode()).append("`").append(" ").append(metadata.getColumnCategory());
-                if (metadata.getColumnDecimal() > 0) {
-                    builder.append("(").append(metadata.getColumnLength()).append(",").append(metadata.getColumnDecimal()).append(")");
-                } else if (metadata.getColumnLength() > 0) {
-                    builder.append("(").append(metadata.getColumnLength()).append(")");
-                }
-                if (metadata.isNotNull()) {
-                    builder.append(" ").append("not null");
-                } else {
-                    builder.append(" ").append("default null");
-                }
-                if (metadata.isAutoIncrement()) {
-                    builder.append(" ").append("auto_increment");
-                }
-                builder.append(",\n");
-                if (metadata.isPrimaryKey()) {
-                    pkList.add(metadata.getColumnCode());
-                }
-            });
-            if (!pkList.isEmpty()) {
-                builder.append("primary key (");
-                pkList.forEach(pk -> {
-                    builder.append("`").append(pk).append("`").append(",");
-                });
-                builder.deleteCharAt(builder.lastIndexOf(","));
-                builder.append(")");
-            } else {
-                builder.deleteCharAt(builder.lastIndexOf(","));
-            }
-            builder.append(");");
-            if (dynamicQueryDataService.exist(persisted.getDatasource().getId(), persisted.getCode())) {
+            if (dynamicQueryDataService.exist(persisted.getDatasource().getName(), persisted.getDatasource().getCategory(), persisted.getDatasource().getHost(), persisted.getDatasource().getSchemaName(), persisted.getDatasource().getPort().toString(), persisted.getDatasource().getUsername(), persisted.getDatasource().getPassword(), persisted.getCode())) {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("_yyyy_MM_dd_HH_mm_ss");
-                dynamicQueryDataService.execute(persisted.getDatasource().getId(), "ALTER TABLE `" + persisted.getCode() + "` RENAME TO  `" + persisted.getCode() + simpleDateFormat.format(new Date()) + "` ;");
+                dynamicQueryDataService.execute(persisted.getDatasource().getName(), persisted.getDatasource().getCategory(), persisted.getDatasource().getHost(), persisted.getDatasource().getSchemaName(), persisted.getDatasource().getPort().toString(), persisted.getDatasource().getUsername(), persisted.getDatasource().getPassword(), "ALTER TABLE `" + persisted.getCode() + "` RENAME TO  `" + persisted.getCode() + simpleDateFormat.format(new Date()) + "` ;");
             }
-            return ResponseEntity.ok(dynamicQueryDataService.execute(persisted.getDatasource().getId(), builder.toString()));
+            List<Metadata> metadataList = persisted.getMetadataList().stream().filter(metadata -> metadata.getStatus().equals(Constant.ACTIVE)).collect(Collectors.toList());
+            return ResponseEntity.ok(dynamicQueryDataService.execute(persisted.getDatasource().getName(), persisted.getDatasource().getCategory(), persisted.getDatasource().getHost(), persisted.getDatasource().getSchemaName(), persisted.getDatasource().getPort().toString(), persisted.getDatasource().getUsername(), persisted.getDatasource().getPassword(), metadataService.generateSql(persisted.getCode(), metadataList)));
         }
         return ResponseEntity.status(Constant.EXCEPTION_UNAUTHORIZED).build();
     }

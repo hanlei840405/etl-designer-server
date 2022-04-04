@@ -10,7 +10,7 @@ import com.nxin.framework.etl.designer.enums.Constant;
 import com.nxin.framework.etl.designer.exception.RecordsNotMatchException;
 import com.nxin.framework.etl.designer.repository.designer.ShellPublishRepository;
 import com.nxin.framework.etl.designer.service.log.ShellPublishLogService;
-import com.nxin.framework.etl.designer.service.task.TaskComp;
+import com.nxin.framework.etl.designer.service.task.EtlTaskComp;
 import com.nxin.framework.etl.designer.vo.PageVo;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
@@ -278,7 +278,7 @@ public class ShellPublishService {
             cronScheduleBuilder.withMisfireHandlingInstructionDoNothing();
         }
         CronTrigger kettleTrigger = TriggerBuilder.newTrigger().withIdentity(taskId).withSchedule(cronScheduleBuilder).build();
-        JobDetail jobDetail = JobBuilder.newJob(TaskComp.class).withIdentity(taskId).build();
+        JobDetail jobDetail = JobBuilder.newJob(EtlTaskComp.class).withIdentity(taskId).build();
         String[] path = shellPublish.getXml().split("/");
         String direct = productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName() + "/";
         File target = new File(direct + path[path.length - 1]);

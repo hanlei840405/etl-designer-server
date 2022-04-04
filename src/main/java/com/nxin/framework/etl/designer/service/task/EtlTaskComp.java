@@ -31,7 +31,7 @@ import static com.nxin.framework.etl.designer.enums.Constant.JOB;
 
 @Slf4j
 @Component
-public class TaskComp extends QuartzJobBean {
+public class EtlTaskComp extends QuartzJobBean {
     @Qualifier("taskExecutor")
     @Autowired
     private Executor taskExecutor;
