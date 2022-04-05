@@ -85,7 +85,7 @@ public class ReportController {
         Report persisted = reportService.one(crudDto.getId(), loginUser.getTenant().getId());
         if (persisted != null) {
             try {
-                Map<String, Object> result = dynamicQueryDataService.query(persisted.getModel().getDatasource().getName(), persisted.getModel().getDatasource().getHost(), persisted.getModel().getDatasource().getCategory(), persisted.getModel().getDatasource().getPort().toString(), persisted.getModel().getDatasource().getSchemaName(), persisted.getModel().getDatasource().getUsername(), persisted.getModel().getDatasource().getPassword(), persisted.getScript());
+                Map<String, Object> result = dynamicQueryDataService.query(persisted.getModel().getDatasource().getName(), persisted.getModel().getDatasource().getCategory(), persisted.getModel().getDatasource().getHost(), persisted.getModel().getDatasource().getSchemaName(), persisted.getModel().getDatasource().getPort().toString(), persisted.getModel().getDatasource().getUsername(), persisted.getModel().getDatasource().getPassword(), persisted.getScript());
                 return ResponseEntity.ok(result);
             } catch (KettleDatabaseException | KettleValueException e) {
                 return ResponseEntity.status(Constant.EXCEPTION_SQL_GRAMMAR).build();
