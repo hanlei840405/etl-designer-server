@@ -15,9 +15,7 @@ public class ReportDto extends BaseVo implements Serializable {
     private String name;
     private String script;
     private String chart;
-    private String direction;
-    private String background;
-    private String color;
+    private String mode;
     private String description;
     private ProjectDto project;
     private ModelVo model;

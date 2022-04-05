@@ -1,10 +1,10 @@
 package com.nxin.framework.etl.designer.enums;
 
 public enum CronType {
-    DAY("day", "0 0 0 1/1 * ?"),
-    WEEK("week", "0 0 0 ? * 1"),
-    MONTH("month", "0 0 0 1 * ?"),
-    YEAR("year", "0 0 0 1 1 ?"),
+    DAY("day", "0 0 16 * * ? *"),
+    WEEK("week", "0 0 16 ? * L"),
+    MONTH("month", "0 0 16 L * ?"),
+    YEAR("year", "0 0 16 L 12 ?"),
     MANUAL("manual", null);
     private String key;
 

@@ -24,11 +24,7 @@ public class Report extends BaseEntity implements Serializable {
     @Column
     private String chart;
     @Column
-    private String direction;
-    @Column
-    private String background;
-    @Column
-    private String color;
+    private String mode;
     @Column
     private String description;
     @ManyToOne

@@ -31,10 +31,11 @@ public class CreateTableTaskComp extends QuartzJobBean {
         String username = jobDataMap.getString("username");
         String password = jobDataMap.getString("password");
         String format = DateFormatType.getValue(frequency);
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, 1);
         if (format != null) {
-            tableName += new SimpleDateFormat(format).format(new Date());
+            tableName += new SimpleDateFormat(format).format(calendar.getTime());
         } else {
-            Calendar calendar = Calendar.getInstance();
             int week = calendar.get(Calendar.DAY_OF_WEEK);
             tableName += "_" + week;
         }
