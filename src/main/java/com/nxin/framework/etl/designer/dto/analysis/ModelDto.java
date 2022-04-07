@@ -13,7 +13,6 @@ public class ModelDto extends BaseVo implements Serializable {
 
     private String code;
     private String name;
-    private String frequency;
     private String description;
     private DatasourceDto datasource;
     private ProjectDto project;

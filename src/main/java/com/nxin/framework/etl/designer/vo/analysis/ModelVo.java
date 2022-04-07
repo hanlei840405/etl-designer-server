@@ -14,7 +14,6 @@ public class ModelVo extends BaseVo implements Serializable {
 
     private String code;
     private String name;
-    private String frequency;
     private String description;
     private DatasourceVo datasource;
     private ProjectVo project;
