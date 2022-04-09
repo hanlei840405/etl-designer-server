@@ -10,6 +10,7 @@ public class ReportDimensionVo extends BaseVo implements Serializable {
 
     private String code;
     private String name;
+    private String expr;
     private String graph;
     private String anchor;
     private String category;

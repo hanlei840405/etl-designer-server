@@ -37,10 +37,6 @@ public class ResourceService {
         return resourceRepository.getFirstByCategoryAndLevel(CATEGORY_ROOT, ROOT);
     }
 
-    public Resource one(String code, Long tenantId) {
-        return resourceRepository.getFirstByCodeAndStatusAndTenantId(code, Constant.ACTIVE, tenantId);
-    }
-
     public Resource save(Resource resource, Tenant tenant) {
         resource.setTenant(tenant);
         return resourceRepository.save(resource);

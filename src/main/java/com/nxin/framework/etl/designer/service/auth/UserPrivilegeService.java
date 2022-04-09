@@ -25,7 +25,7 @@ public class UserPrivilegeService {
     private ResourceService resourceService;
 
     public List<UserPrivilege> search(Long accountId, Long tenantId) {
-        return userPrivilegeRepository.findAllByUserIdAndTenantIdAndStatusEquals(accountId, tenantId, Constant.ACTIVE);
+        return userPrivilegeRepository.findAllByUserIdAndTenantIdAndStatus(accountId, tenantId, Constant.ACTIVE);
     }
 
     public List<UserPrivilege> close(List<UserPrivilege> userPrivileges, String modifier, Tenant tenant) {

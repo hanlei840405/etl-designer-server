@@ -60,12 +60,12 @@ public class EtlGeneratorService {
     @Value("${etl.log.datasource.password}")
     private String etlLogDatasourcePassword;
 
-    public Map<String, Object> getTransMeta(Shell shell, String tenant, boolean prod) {
+    public Map<String, Object> getTransMeta(Shell shell, Long tenantId, boolean prod) {
         String content = ZipUtils.uncompress(shell.getContent()), name = shell.getName();
         try {
             StringBuilder builder = new StringBuilder(attachmentDir);
             String env = prod ? "prod/" : "design/";
-            builder.append(tenant).append("/").append(shell.getProject().getName()).append("/").append(shell.getName()).append("/").append(env);
+            builder.append(tenantId).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(env);
             File folder = new File(builder.toString());
             if (!folder.exists()) {
                 folder.mkdirs();

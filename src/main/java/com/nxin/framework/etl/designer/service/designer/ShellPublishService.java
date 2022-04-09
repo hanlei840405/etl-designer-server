@@ -136,7 +136,7 @@ public class ShellPublishService {
             if (Constant.JOB.equals(shell.getCategory())) {
                 result = etlGeneratorService.getJobMeta(shell);
             } else {
-                result = etlGeneratorService.getTransMeta(shell, tenant.getName(), true);
+                result = etlGeneratorService.getTransMeta(shell, tenant.getId(), true);
                 TransMeta transMeta = (TransMeta) result.get("transMeta");
                 StepMeta[] stepMetas = transMeta.getStepsArray();
                 for (StepMeta stepMeta : stepMetas) {
@@ -148,6 +148,7 @@ public class ShellPublishService {
             String id = UUID.randomUUID().toString();
             ShellPublish shellPublish = new ShellPublish();
             shellPublish.setBusinessId(id);
+            shellPublish.setTenant(shell.getTenant());
             shellPublish.setShell(shell);
             shellPublish.setDescription(description);
             shellPublish.setContent(shell.getContent());
@@ -176,13 +177,13 @@ public class ShellPublishService {
                 shellPublish.setReference(String.join(",", sprIds));
             }
             // 将脚本文件复制到publish目录下
-            File folder = new File(publishDir + shell.getProject().getName() + "/" + shell.getShell().getName() + "/" + shellPublish.getBusinessId());
+            File folder = new File(publishDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId() + "/" + shellPublish.getBusinessId());
             if (!folder.exists()) {
                 folder.mkdirs();
             }
-            String[] path = shell.getXml().split("/");
-            String direct = publishDir + shell.getProject().getName() + "/" + shell.getShell().getName() + "/" + shellPublish.getBusinessId() + "/";
-            File target = new File(direct + path[path.length - 1]);
+            String fileName = shell.getName().concat(shell.getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
+            String direct = publishDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId() + "/" + shellPublish.getBusinessId() + "/";
+            File target = new File(direct + fileName);
             Files.copy(new File(shell.getXml()), target);
             modifyFileName(Arrays.asList(target.getCanonicalPath()), direct);
             shellPublish.setXml(target.getCanonicalPath());
@@ -206,11 +207,8 @@ public class ShellPublishService {
             // 将关联脚本也一并下线
             reference = published.getReference();
             if (StringUtils.hasLength(reference)) {
-                long[] ids = Arrays.asList(reference.split(",")).stream().mapToLong(Long::parseLong).toArray();
-                referencedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().map(spr -> {
-                    spr.setProd(Constant.INACTIVE);
-                    return spr;
-                }).collect(Collectors.toList());
+                long[] ids = Arrays.stream(reference.split(",")).mapToLong(Long::parseLong).toArray();
+                referencedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().peek(spr -> spr.setProd(Constant.INACTIVE)).collect(Collectors.toList());
             }
             if (StringUtils.hasLength(published.getTaskId())) {
                 if (StringUtils.hasLength(published.getTaskId())) {
@@ -243,7 +241,7 @@ public class ShellPublishService {
             shellPublish.setTaskId(taskId);
         }
         // 创建生产环境目录
-        File folder = new File(productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName());
+        File folder = new File(productionDir + shellPublish.getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId());
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -251,21 +249,20 @@ public class ShellPublishService {
         // 将新关联的脚本启用上线
         reference = shellPublish.getReference();
         if (StringUtils.hasLength(reference)) {
-            long[] ids = Arrays.asList(reference.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            List<ShellPublish> existedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().map(spr -> {
+            long[] ids = Arrays.stream(reference.split(",")).mapToLong(Long::parseLong).toArray();
+            List<ShellPublish> existedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().peek(spr -> {
                 spr.setProd(Constant.ACTIVE);
                 try {
                     // 复制到生产环境
-                    String[] path = spr.getXml().split("/");
-                    String direct = productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName() + "/";
-                    File target = new File(direct + path[path.length - 1]);
+                    String fileName = spr.getShell().getName().concat(spr.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
+                    String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+                    File target = new File(direct + fileName);
                     Files.copy(new File(spr.getXml()), target);
                     files.add(target.getCanonicalPath());
-                    spr.setProdPath(direct + path[path.length - 1]);
+                    spr.setProdPath(direct + fileName);
                 } catch (IOException e) {
                     log.error(e.toString());
                 }
-                return spr;
             }).collect(Collectors.toList());
             referencedList.addAll(existedList);
         }
@@ -279,16 +276,17 @@ public class ShellPublishService {
         }
         CronTrigger kettleTrigger = TriggerBuilder.newTrigger().withIdentity(taskId).withSchedule(cronScheduleBuilder).build();
         JobDetail jobDetail = JobBuilder.newJob(EtlTaskComp.class).withIdentity(taskId).build();
-        String[] path = shellPublish.getXml().split("/");
-        String direct = productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName() + "/";
-        File target = new File(direct + path[path.length - 1]);
+        String fileName = shellPublish.getShell().getName().concat(shellPublish.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
+        String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+        File target = new File(direct + fileName);
         Files.copy(new File(shellPublish.getXml()), target);
         files.add(target.getCanonicalPath());
         modifyFileName(files, direct);
         jobDetail.getJobDataMap().put("path", target.getCanonicalPath());
+        jobDetail.getJobDataMap().put("shellId", shellPublish.getShell().getId());
         jobDetail.getJobDataMap().put("shellPublishId", shellPublish.getId());
         scheduler.scheduleJob(jobDetail, kettleTrigger);
-        shellPublish.setProdPath(direct + path[path.length - 1]);
+        shellPublish.setProdPath(direct + fileName);
         referencedList.add(shellPublish);
         shellPublishRepository.saveAll(referencedList);
     }
@@ -309,11 +307,8 @@ public class ShellPublishService {
             // 将关联脚本也一并下线
             reference = published.getReference();
             if (StringUtils.hasLength(reference)) {
-                long[] ids = Arrays.asList(reference.split(",")).stream().mapToLong(Long::parseLong).toArray();
-                referencedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().map(spr -> {
-                    spr.setProd(Constant.INACTIVE);
-                    return spr;
-                }).collect(Collectors.toList());
+                long[] ids = Arrays.stream(reference.split(",")).mapToLong(Long::parseLong).toArray();
+                referencedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().peek(spr -> spr.setProd(Constant.INACTIVE)).collect(Collectors.toList());
             }
             // 如果之前任务为schedule任务，则将之前发布的任务停止
             if (StringUtils.hasLength(published.getTaskId())) {
@@ -345,7 +340,7 @@ public class ShellPublishService {
             shellPublish.setTaskId(taskId);
         }
         // 创建生产环境目录
-        File folder = new File(productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName());
+        File folder = new File(productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId());
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -353,31 +348,30 @@ public class ShellPublishService {
         // 将新关联的脚本启用上线
         reference = shellPublish.getReference();
         if (StringUtils.hasLength(reference)) {
-            long[] ids = Arrays.asList(reference.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            List<ShellPublish> existedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().map(spr -> {
+            long[] ids = Arrays.stream(reference.split(",")).mapToLong(Long::parseLong).toArray();
+            List<ShellPublish> existedList = shellPublishRepository.findAllByIdInAndTenantId(ids, shellPublish.getTenant().getId()).stream().peek(spr -> {
                 spr.setProd(Constant.ACTIVE);
                 try {
                     // 复制到生产环境
-                    String[] path = spr.getXml().split("/");
-                    String direct = productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName() + "/";
-                    File target = new File(direct + path[path.length - 1]);
+                    String fileName = spr.getShell().getName().concat(spr.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
+                    String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+                    File target = new File(direct + fileName);
                     Files.copy(new File(spr.getXml()), target);
                     files.add(target.getCanonicalPath());
-                    spr.setProdPath(direct + path[path.length - 1]);
+                    spr.setProdPath(direct + fileName);
                 } catch (IOException e) {
                     log.error(e.toString());
                 }
-                return spr;
             }).collect(Collectors.toList());
             referencedList.addAll(existedList);
         }
-        String[] path = shellPublish.getXml().split("/");
-        String direct = productionDir + shellPublish.getShell().getProject().getName() + "/" + shellPublish.getShell().getName() + "/";
-        File target = new File(direct + path[path.length - 1]);
+        String fileName = shellPublish.getShell().getName().concat(shellPublish.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
+        String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+        File target = new File(direct + fileName);
         Files.copy(new File(shellPublish.getXml()), target);
         files.add(target.getCanonicalPath());
         modifyFileName(files, direct);
-        shellPublish.setProdPath(direct + path[path.length - 1]);
+        shellPublish.setProdPath(direct + fileName);
         referencedList.add(shellPublish);
         shellPublishRepository.saveAll(referencedList);
         DBCache.getInstance().clear(null);

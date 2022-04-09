@@ -84,7 +84,7 @@ public class DesignerController {
             if (TRANSFORM.equals(existed.getCategory())) {
                 TransExecutionConfiguration transExecutionConfiguration = new TransExecutionConfiguration();
                 transExecutionConfiguration.setLogLevel(LogLevel.BASIC);
-                Map<String, Object> transMap = etlGeneratorService.getTransMeta(shell, loginUser.getTenant().getName(), false);
+                Map<String, Object> transMap = etlGeneratorService.getTransMeta(shell, loginUser.getTenant().getId(), false);
                 TransMeta transMeta = (TransMeta) transMap.get("transMeta");
                 TransConfiguration transConfiguration = new TransConfiguration(transMeta, transExecutionConfiguration);
                 spoonLoggingObject.setLogLevel(transExecutionConfiguration.getLogLevel());

@@ -50,7 +50,7 @@ public class ShellService {
             shell.setStreaming(Constant.BATCH);
             if (Constant.TRANSFORM.equals(shell.getCategory())) {
                 try {
-                    Map<String, Object> transResult = etlGeneratorService.getTransMeta(shell, tenant.getName(), false);
+                    Map<String, Object> transResult = etlGeneratorService.getTransMeta(shell, tenant.getId(), false);
                     TransMeta transMeta = (TransMeta) transResult.get("transMeta");
                     StepMeta[] stepMetas = transMeta.getStepsArray();
                     for (StepMeta stepMeta : stepMetas) {
@@ -60,11 +60,12 @@ public class ShellService {
                         }
                     }
                     String xml = transMeta.getXML();
-                    File folder = new File(devDir + shell.getProject().getName() + "/" + shell.getShell().getName());
+                    String path = devDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId();
+                    File folder = new File(path);
                     if (!folder.exists()) {
                         folder.mkdirs();
                     }
-                    File transFile = new File(devDir + shell.getProject().getName() + "/" + shell.getShell().getName() + "/" + shell.getName() + ".ktr");
+                    File transFile = new File(path + "/" + shell.getName() + ".ktr");
                     Files.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xml).getBytes(StandardCharsets.UTF_8), transFile);
                     shell.setXml(transFile.getCanonicalPath());
                     shell.setReference((String) transResult.get("referenceIds"));
@@ -88,11 +89,12 @@ public class ShellService {
                         }
                     }
                     String xml = jobMeta.getXML();
-                    File folder = new File(devDir + shell.getProject().getName() + "/" + shell.getShell().getName());
+                    String path = devDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId();
+                    File folder = new File(path);
                     if (!folder.exists()) {
                         folder.mkdirs();
                     }
-                    File jobFile = new File(devDir + shell.getProject().getName() + "/" + shell.getShell().getName() + "/" + shell.getName() + ".kjb");
+                    File jobFile = new File(path+ "/" + shell.getName() + ".kjb");
                     Files.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xml).getBytes(StandardCharsets.UTF_8), jobFile);
                     shell.setXml(jobFile.getCanonicalPath());
                     shell.setReference((String) jobResult.get("referenceIds"));

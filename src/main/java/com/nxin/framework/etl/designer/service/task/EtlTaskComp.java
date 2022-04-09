@@ -21,9 +21,14 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
+import org.springframework.orm.jpa.EntityManagerHolder;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -32,6 +37,8 @@ import static com.nxin.framework.etl.designer.enums.Constant.JOB;
 @Slf4j
 @Component
 public class EtlTaskComp extends QuartzJobBean {
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
     @Qualifier("taskExecutor")
     @Autowired
     private Executor taskExecutor;
@@ -44,6 +51,9 @@ public class EtlTaskComp extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManagerHolder emHolder = new EntityManagerHolder(entityManager);
+        TransactionSynchronizationManager.bindResource(entityManagerFactory, emHolder);
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
         String path = jobDataMap.getString("path");
         Long shellPublishId = jobDataMap.getLong("shellPublishId");
@@ -83,6 +93,9 @@ public class EtlTaskComp extends QuartzJobBean {
             }
         } catch (KettleXMLException e) {
             e.printStackTrace();
+        } finally {
+            TransactionSynchronizationManager.unbindResource(entityManagerFactory);
+            EntityManagerFactoryUtils.closeEntityManager(emHolder.getEntityManager());
         }
     }
 }

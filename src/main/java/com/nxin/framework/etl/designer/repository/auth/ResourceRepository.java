@@ -10,8 +10,6 @@ import java.util.List;
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, Long> {
 
-    Resource getFirstByCodeAndStatusAndTenantId(String code, String status, Long tenantId);
-
     List<Resource> findAllByIdIn(List<Long> idList);
 
     List<Resource> findAllByLevelIn(List<String> levels);

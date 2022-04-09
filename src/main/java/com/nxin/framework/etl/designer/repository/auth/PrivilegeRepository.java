@@ -10,7 +10,7 @@ import java.util.List;
 public interface PrivilegeRepository extends JpaRepository<Privilege, Long> {
     List<Privilege> findByTenantIdAndStatusAndResourceIdIn(Long tenantId, String status, List<Long> resourceIds);
 
-    List<Privilege> findAllByTenantIdAndStatusEquals(Long tenantId, String status);
+    List<Privilege> findAllByTenantIdAndStatus(Long tenantId, String status);
 
-    Privilege getFirstByTenantIdAndResourceIdAndStatusEquals(Long tenantId, Long resourceId, String status);
+    Privilege getFirstByTenantIdAndResourceIdAndStatus(Long tenantId, Long resourceId, String status);
 }

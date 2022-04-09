@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class TenantService {
@@ -23,12 +22,5 @@ public class TenantService {
         tenant.setProbationEndDate(calendar.getTime());
         tenantRepository.save(tenant);
         return tenant;
-    }
-
-    public void expire() {
-        Date date = new Date();
-        List<Tenant> tenants = tenantRepository.findAllByProbationEndDateAfter(date);
-        tenants.forEach(tenant -> tenant.setStatus(Constant.INACTIVE));
-        tenantRepository.saveAll(tenants);
     }
 }

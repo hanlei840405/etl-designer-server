@@ -20,11 +20,11 @@ public class PrivilegeService {
     }
 
     public Privilege one(Long tenantId, Long resourceId) {
-        return privilegeRepository.getFirstByTenantIdAndResourceIdAndStatusEquals(tenantId, resourceId, Constant.ACTIVE);
+        return privilegeRepository.getFirstByTenantIdAndResourceIdAndStatus(tenantId, resourceId, Constant.ACTIVE);
     }
 
     public List<Privilege> search(Tenant tenant) {
-        return privilegeRepository.findAllByTenantIdAndStatusEquals(tenant.getId(), Constant.ACTIVE);
+        return privilegeRepository.findAllByTenantIdAndStatus(tenant.getId(), Constant.ACTIVE);
     }
 
     public Privilege save(Privilege privilege, Tenant tenant) {

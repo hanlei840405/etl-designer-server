@@ -59,7 +59,7 @@ public class AttachmentController {
             StringBuilder builder = new StringBuilder(attachmentDir);
             Map<String, String> json = objectMapper.readValue(crudDto.getPayload(), new TypeReference<Map<String, String>>() {
             });
-            String path = builder.append(loginUser.getTenant().getName()).append("/").append(shell.getProject().getName()).append("/").append(shell.getName()).append("/").append(json.get("env")).append("/").append(json.get("filename")).toString();
+            String path = builder.append(loginUser.getTenant().getId()).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(json.get("env")).append("/").append(json.get("filename")).toString();
             File file = new File(path);
             if (file.exists()) {
                 file.delete();
@@ -77,7 +77,7 @@ public class AttachmentController {
         Shell shell = shellService.one(crudDto.getId(), loginUser.getTenant().getId());
         if (shell != null && shell.getProject().getUsers().contains(loginUser)) {
             StringBuilder builder = new StringBuilder(attachmentDir);
-            String path = builder.append(loginUser.getTenant().getName()).append("/").append(shell.getProject().getName()).append("/").append(shell.getName()).append("/").append(crudDto.getPayload()).append("/").toString();
+            String path = builder.append(loginUser.getTenant().getId()).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(crudDto.getPayload()).append("/").toString();
             File folder = new File(path);
             if (!folder.exists()) {
                 folder.mkdirs();
@@ -101,10 +101,9 @@ public class AttachmentController {
         Shell shell = shellService.one(id, loginUser.getTenant().getId());
         if (shell != null && shell.getProject().getUsers().contains(loginUser)) {
             StringBuilder builder = new StringBuilder(attachmentDir);
-            String path = builder.append(loginUser.getTenant().getName()).append("/").append(shell.getProject().getName()).append("/").append(shell.getName()).append("/").append(env).append("/").append(filename).toString();
+            String path = builder.append(loginUser.getTenant().getId()).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(env).append("/").append(filename).toString();
             File file = new File(path);
             if (file.exists()) {
-                InputStream inStream = new FileInputStream(file);
                 response.setContentType("application/octet-stream");
                 response.setCharacterEncoding("UTF-8");
                 response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");

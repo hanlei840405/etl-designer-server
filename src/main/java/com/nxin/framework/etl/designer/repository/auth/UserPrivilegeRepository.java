@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface UserPrivilegeRepository extends JpaRepository<UserPrivilege, Long> {
-    List<UserPrivilege> findAllByUserIdAndTenantIdAndStatusEquals(Long userId, Long tenantId, String status);
+    List<UserPrivilege> findAllByUserIdAndTenantIdAndStatus(Long userId, Long tenantId, String status);
 }

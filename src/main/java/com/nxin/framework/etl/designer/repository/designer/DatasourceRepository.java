@@ -12,10 +12,6 @@ public interface DatasourceRepository extends JpaRepository<Datasource, Long> {
 
     Datasource getFirstByIdAndTenantId(Long id, Long tenantId);
 
-    Datasource getFirstByProjectIdAndName(Long projectId, String name);
-
-    Datasource getFirstByProjectIdAndNameAndTenantId(Long projectId, String name, Long tenantId);
-
     List<Datasource> findAllByProjectIdAndTenantId(Long branchId, Long tenantId, Sort sort);
 
     List<Datasource> findAllByProjectIdAndStatusAndTenantId(Long branchId, String status, Long tenantId, Sort sort);

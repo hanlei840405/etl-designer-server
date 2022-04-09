@@ -22,14 +22,6 @@ public class DatasourceService {
         return datasourceRepository.getFirstByIdAndTenantId(id, tenantId);
     }
 
-    public Datasource one(Long projectId, String name) {
-        return datasourceRepository.getFirstByProjectIdAndName(projectId, name);
-    }
-
-    public Datasource one(Long projectId, String name, Long tenantId) {
-        return datasourceRepository.getFirstByProjectIdAndNameAndTenantId(projectId, name, tenantId);
-    }
-
     public List<Datasource> all(Long projectId, Long tenantId) {
         return datasourceRepository.findAllByProjectIdAndTenantId(projectId, tenantId, Sort.by(Sort.Order.desc("status"), Sort.Order.desc("createTime")));
     }
