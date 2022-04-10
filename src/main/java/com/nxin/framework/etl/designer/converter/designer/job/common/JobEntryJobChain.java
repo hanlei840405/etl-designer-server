@@ -40,31 +40,28 @@ public class JobEntryJobChain extends JobConvertChain {
             JobEntryJob jobEntryJob = new JobEntryJob(name);
             jobEntryJob.setSpecificationMethod(ObjectLocationSpecificationMethod.FILENAME);
             if (formAttributes.containsKey("executeEachRow")) {
-                boolean executeEachRow = (boolean) formAttributes.get("executeEachRow");
-                jobEntryJob.execPerRow = executeEachRow;
+                jobEntryJob.execPerRow = (boolean) formAttributes.get("executeEachRow");
             }
             if (formAttributes.containsKey("expandRemoteOnSlave")) {
-                boolean expandRemoteOnSlave = (boolean) formAttributes.get("expandRemoteOnSlave");
-                jobEntryJob.expandingRemoteJob = expandRemoteOnSlave;
+                jobEntryJob.expandingRemoteJob = (boolean) formAttributes.get("expandRemoteOnSlave");
             }
             if (formAttributes.containsKey("passingExport")) {
-                boolean passingExport = (boolean) formAttributes.get("passingExport");
-                jobEntryJob.setPassingExport(passingExport);
+                jobEntryJob.setPassingExport((boolean) formAttributes.get("passingExport"));
             }
             if (formAttributes.containsKey("waitRemoteFinished")) {
-                boolean waitRemoteFinished = (boolean) formAttributes.get("waitRemoteFinished");
-                jobEntryJob.waitingToFinish = waitRemoteFinished;
+                jobEntryJob.waitingToFinish = (boolean) formAttributes.get("waitRemoteFinished");
             }
             if (formAttributes.containsKey("followingAbortRemotely")) {
-                boolean followingAbortRemotely = (boolean) formAttributes.get("followingAbortRemotely");
-                jobEntryJob.followingAbortRemotely = followingAbortRemotely;
+                jobEntryJob.followingAbortRemotely = (boolean) formAttributes.get("followingAbortRemotely");
             }
             List<Map<String, String>> resultArguments = (List<Map<String, String>>) formAttributes.get("resultArguments");
             for (Map<String, String> resultArgument : resultArguments) {
                 arguments.add(resultArgument.get("argument"));
             }
+            if (formAttributes.containsKey("argFromPrevious")) {
+                jobEntryJob.argFromPrevious = (boolean) formAttributes.get("argFromPrevious");
+            }
             if (!arguments.isEmpty()) {
-                jobEntryJob.argFromPrevious = true;
                 jobEntryJob.arguments = arguments.toArray(new String[0]);
             } else {
                 jobEntryJob.arguments = new String[0];
@@ -75,9 +72,13 @@ public class JobEntryJobChain extends JobConvertChain {
                 parameterFieldNames.add(nameArgument.get("field"));
                 parameterValues.add(nameArgument.get("value"));
             }
+            if (formAttributes.containsKey("paramsFromPrevious")) {
+                jobEntryJob.paramsFromPrevious = (boolean) formAttributes.get("paramsFromPrevious");
+            }
+            if (formAttributes.containsKey("passingAllParameters")) {
+                jobEntryJob.passingAllParameters = (boolean) formAttributes.get("passingAllParameters");
+            }
             if (!parameters.isEmpty()) {
-                jobEntryJob.paramsFromPrevious = true;
-                jobEntryJob.setPassingAllParameters(true);
                 jobEntryJob.parameters = parameters.toArray(new String[0]);
                 jobEntryJob.parameterFieldNames = parameterFieldNames.toArray(new String[0]);
                 jobEntryJob.parameterValues = parameterValues.toArray(new String[0]);

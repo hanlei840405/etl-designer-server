@@ -40,31 +40,29 @@ public class JobEntryTransChain extends JobConvertChain {
             JobEntryTrans jobEntryTrans = new JobEntryTrans(name);
             jobEntryTrans.setSpecificationMethod(ObjectLocationSpecificationMethod.FILENAME);
             if (formAttributes.containsKey("executeEachRow")) {
-                boolean executeEachRow = (boolean) formAttributes.get("executeEachRow");
-                jobEntryTrans.execPerRow = executeEachRow;
+                jobEntryTrans.execPerRow = (boolean) formAttributes.get("executeEachRow");
             }
             if (formAttributes.containsKey("clearRecords")) {
-                boolean clearRecords = (boolean) formAttributes.get("clearRecords");
-                jobEntryTrans.clearResultRows = clearRecords;
+                jobEntryTrans.clearResultRows = (boolean) formAttributes.get("clearRecords");
             }
             if (formAttributes.containsKey("clearFileRecords")) {
-                boolean clearFileRecords = (boolean) formAttributes.get("clearFileRecords");
-                jobEntryTrans.clearResultFiles = clearFileRecords;
+                jobEntryTrans.clearResultFiles = (boolean) formAttributes.get("clearFileRecords");
             }
             if (formAttributes.containsKey("waitRemoteFinished")) {
-                boolean waitRemoteFinished = (boolean) formAttributes.get("waitRemoteFinished");
-                jobEntryTrans.waitingToFinish = waitRemoteFinished;
+                jobEntryTrans.waitingToFinish = (boolean) formAttributes.get("waitRemoteFinished");
             }
             if (formAttributes.containsKey("notice")) {
-                boolean notice = (boolean) formAttributes.get("notice");
-                jobEntryTrans.followingAbortRemotely = notice;
+                jobEntryTrans.followingAbortRemotely = (boolean) formAttributes.get("notice");
             }
+
             List<Map<String, String>> resultArguments = (List<Map<String, String>>) formAttributes.get("resultArguments");
             for (Map<String, String> resultArgument : resultArguments) {
                 arguments.add(resultArgument.get("argument"));
             }
+            if (formAttributes.containsKey("argFromPrevious")) {
+                jobEntryTrans.argFromPrevious = (boolean) formAttributes.get("argFromPrevious");
+            }
             if (!arguments.isEmpty()) {
-                jobEntryTrans.argFromPrevious = true;
                 jobEntryTrans.arguments = arguments.toArray(new String[0]);
             } else {
                 jobEntryTrans.arguments = new String[0];
@@ -75,9 +73,13 @@ public class JobEntryTransChain extends JobConvertChain {
                 parameterFieldNames.add(nameArgument.get("field"));
                 parameterValues.add(nameArgument.get("value"));
             }
+            if (formAttributes.containsKey("paramsFromPrevious")) {
+                jobEntryTrans.paramsFromPrevious = (boolean) formAttributes.get("paramsFromPrevious");
+            }
+            if (formAttributes.containsKey("passingAllParameters")) {
+                jobEntryTrans.setPassingAllParameters((boolean) formAttributes.get("passingAllParameters"));
+            }
             if (!parameters.isEmpty()) {
-                jobEntryTrans.paramsFromPrevious = true;
-                jobEntryTrans.setPassingAllParameters(true);
                 jobEntryTrans.parameters = parameters.toArray(new String[0]);
                 jobEntryTrans.parameterFieldNames = parameterFieldNames.toArray(new String[0]);
                 jobEntryTrans.parameterValues = parameterValues.toArray(new String[0]);
