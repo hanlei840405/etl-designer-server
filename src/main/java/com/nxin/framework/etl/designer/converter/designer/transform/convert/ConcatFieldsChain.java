@@ -10,7 +10,6 @@ import com.nxin.framework.etl.designer.enums.Constant;
 import com.sun.org.apache.xerces.internal.dom.DeferredElementImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.pentaho.di.core.row.value.ValueMetaFactory;
-import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.concatfields.ConcatFieldsMeta;
@@ -62,7 +61,14 @@ public class ConcatFieldsChain extends TransformConvertChain {
                 textFileField.setDecimalSymbol((String) fieldMapping.get("decimal"));
                 textFileField.setGroupingSymbol((String) fieldMapping.get("groupBy"));
                 textFileField.setNullString((String) fieldMapping.get("emptyValue"));
-                textFileField.setTrimType(ValueMetaString.getTrimTypeByDesc((String) fieldMapping.get("removeBlank")));
+                int removeBlank = 0;
+                for (int i = 0; i < Constant.TRIM_TYPE_CODE.length; i++) {
+                    if (Constant.TRIM_TYPE_CODE[i].equals(fieldMapping.get("removeBlank"))) {
+                        removeBlank = i;
+                        break;
+                    }
+                }
+                textFileField.setTrimType(removeBlank);
                 textFileFields.add(textFileField);
             }
             concatFieldsMeta.setTargetFieldName(target);

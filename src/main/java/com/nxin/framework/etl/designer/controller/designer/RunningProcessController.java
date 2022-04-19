@@ -31,7 +31,7 @@ public class RunningProcessController {
     private UserService userService;
     private BeanConverter<RunningProcessVo, RunningProcess> runningProcessConverter = new RunningProcessConverter();
 
-    @PreAuthorize("hasAuthority('USER_OPERATE') or hasAuthority('PROBATION')")
+    @PreAuthorize("hasAuthority('ROOT') or hasAuthority('PROCESS')")
     @PostMapping("/runningProcesses")
     public ResponseEntity<PageVo<RunningProcessVo>> runningProcesses(@RequestBody CrudDto crudDto, Principal principal) {
         User loginUser = userService.one(principal.getName());
@@ -40,7 +40,7 @@ public class RunningProcessController {
         return ResponseEntity.ok(runningProcessVoPageVo);
     }
 
-    @PreAuthorize("hasAuthority('USER_OPERATE') or hasAuthority('PROBATION')")
+    @PreAuthorize("hasAuthority('ROOT') or hasAuthority('PROCESS')")
     @DeleteMapping("/runningProcess/{id}")
     public ResponseEntity<RunningProcessVo> delete(@PathVariable Long id, Principal principal) {
         User loginUser = userService.one(principal.getName());
@@ -69,7 +69,7 @@ public class RunningProcessController {
         }
     }
 
-//    @PreAuthorize("hasAuthority('USER_OPERATE') or hasAuthority('PROBATION')")
+//    @PreAuthorize("hasAuthority('ROOT') or hasAuthority('PROBATION')")
 //    @DeleteMapping("/runningProcess/instanceId/{instanceId}")
 //    public ResponseEntity<List<RunningProcess>> deleteByInstanceId(@PathVariable String instanceId, Principal principal) {
 //        User loginUser = userService.one(principal.getName());

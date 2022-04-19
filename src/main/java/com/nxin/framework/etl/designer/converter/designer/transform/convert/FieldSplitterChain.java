@@ -74,7 +74,14 @@ public class FieldSplitterChain extends TransformConvertChain {
                 groupByList.add((String) fieldMapping.get("groupBy"));
                 nullIfList.add((String) fieldMapping.get("nullIf"));
                 emptyValueList.add((String) fieldMapping.get("emptyValue"));
-                removeBlankList.add(ValueMetaString.getTrimTypeByDesc((String) fieldMapping.get("removeBlank")));
+                int removeBlank = 0;
+                for (int i = 0; i < Constant.TRIM_TYPE_CODE.length; i++) {
+                    if (Constant.TRIM_TYPE_CODE[i].equals(fieldMapping.get("removeBlank"))) {
+                        removeBlank = i;
+                        break;
+                    }
+                }
+                removeBlankList.add(removeBlank);
             }
             fieldSplitterMeta.setSplitField(field);
             fieldSplitterMeta.setDelimiter(delimiter);

@@ -81,7 +81,7 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("hasAuthority('USER_OPERATE') or hasAuthority('PROBATION')")
+    @PreAuthorize("hasAuthority('ROOT') or hasAuthority('PROBATION')")
     @PutMapping("/user/{id}")
     public ResponseEntity<UserVo> lock(@PathVariable("id") Long id, Principal principal) {
         User loginUser = userService.one(principal.getName());
@@ -94,7 +94,7 @@ public class UserController {
         return ResponseEntity.status(Constant.EXCEPTION_UNAUTHORIZED).build();
     }
 
-    @PreAuthorize("hasAuthority('USER_OPERATE') or hasAuthority('PROBATION')")
+    @PreAuthorize("hasAuthority('ROOT') or hasAuthority('PROBATION')")
     @DeleteMapping("/user/{id}")
     public ResponseEntity<UserVo> delete(@PathVariable("id") Long id, Principal principal) {
         User loginUser = userService.one(principal.getName());

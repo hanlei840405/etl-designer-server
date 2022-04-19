@@ -32,7 +32,7 @@ public class KafkaConsumerInputChain extends TransformConvertChain {
             String stepName = (String) formAttributes.get("name");
             String servers = (String) formAttributes.get("servers");
             Integer shellId = (Integer) formAttributes.get("shellId");
-            String topic = (String) formAttributes.get("topic");
+            List<Map<String, String>> topics = (List<Map<String, String>>) formAttributes.get("topics");
             String consumerGroup = (String) formAttributes.get("consumerGroup");
             String commitMode = (String) formAttributes.get("commitMode");
             int duration = 0;
@@ -80,7 +80,9 @@ public class KafkaConsumerInputChain extends TransformConvertChain {
                 kafkaConsumerInputMeta.setTransformationPath(transformShell.getXml());
             }
             kafkaConsumerInputMeta.setDirectBootstrapServers(servers);
-            kafkaConsumerInputMeta.setTopics(Arrays.asList(topic));
+            for (Map<String, String> topic : topics) {
+                kafkaConsumerInputMeta.addTopic(topic.get("topic"));
+            }
             kafkaConsumerInputMeta.setConnectionType(KafkaConsumerInputMeta.ConnectionType.DIRECT);
             kafkaConsumerInputMeta.setConsumerGroup(consumerGroup);
             kafkaConsumerInputMeta.setAutoCommit("record".equals(commitMode));

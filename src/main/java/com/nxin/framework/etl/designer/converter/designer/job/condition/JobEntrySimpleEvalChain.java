@@ -36,17 +36,45 @@ public class JobEntrySimpleEvalChain extends JobConvertChain {
             String max = (String) formAttributes.get("max");
             JobEntrySimpleEval jobEntrySimpleEval = new JobEntrySimpleEval();
             jobEntrySimpleEval.setName(name);
-            jobEntrySimpleEval.valuetype = JobEntrySimpleEval.getValueTypeByDesc(mode);
+            int valuetype = 0;
+            for (int i = 0; i < Constant.VALUE_TYPE_CODE.length; i++) {
+                if (Constant.VALUE_TYPE_CODE[i].equals(mode)) {
+                    valuetype = i;
+                    break;
+                }
+            }
+            jobEntrySimpleEval.valuetype = valuetype;
             jobEntrySimpleEval.setFieldName(fieldName);
             jobEntrySimpleEval.setVariableName(variableName);
-            jobEntrySimpleEval.fieldtype = JobEntrySimpleEval.getFieldTypeByDesc(category);
+            int fieldtype = 0;
+            for (int i = 0; i < Constant.FIELD_TYPE_CODE.length; i++) {
+                if (Constant.FIELD_TYPE_CODE[i].equals(category)) {
+                    fieldtype = i;
+                    break;
+                }
+            }
+            jobEntrySimpleEval.fieldtype = fieldtype;
             jobEntrySimpleEval.setSuccessWhenVarSet(success);
             if (Constant.NUMBER.equals(category)) {
                 jobEntrySimpleEval.successnumbercondition = JobEntrySimpleEval.getSuccessNumberConditionByCode(condition);
             } else if (Constant.BOOLEAN.equals(category)) {
-                jobEntrySimpleEval.successbooleancondition = JobEntrySimpleEval.getSuccessBooleanConditionByDesc(condition);
+                int successbooleancondition = 0;
+                for (int i = 0; i < Constant.SUCCESS_CONDITION_BOOLEAN_CODE.length; i++) {
+                    if (Constant.SUCCESS_CONDITION_BOOLEAN_CODE[i].equals(condition)) {
+                        successbooleancondition = i;
+                        break;
+                    }
+                }
+                jobEntrySimpleEval.successbooleancondition = successbooleancondition;
             } else {
-                jobEntrySimpleEval.successcondition = JobEntrySimpleEval.getSuccessConditionByDesc(condition);
+                int successcondition = 0;
+                for (int i = 0; i < Constant.SUCCESS_CONDITION_CODE.length; i++) {
+                    if (Constant.SUCCESS_CONDITION_CODE[i].equals(condition)) {
+                        successcondition = i;
+                        break;
+                    }
+                }
+                jobEntrySimpleEval.successcondition = successcondition;
             }
             jobEntrySimpleEval.setCompareValue(valueForm);
             jobEntrySimpleEval.setMinValue(min);

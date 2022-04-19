@@ -98,7 +98,7 @@ public class JsonInputChain extends TransformConvertChain {
                 jsonInputField.setDecimalSymbol((String) fieldMapping.get("decimal"));
                 jsonInputField.setGroupSymbol((String) fieldMapping.get("groupBy"));
                 jsonInputField.setTrimType((String) fieldMapping.get("removeBlank"));
-                if ("Y".equals(fieldMapping.get("removeBlank"))) {
+                if ("Y".equals(fieldMapping.get("repeat"))) {
                     jsonInputField.setRepeated(true);
                 } else {
                     jsonInputField.setRepeated(false);
