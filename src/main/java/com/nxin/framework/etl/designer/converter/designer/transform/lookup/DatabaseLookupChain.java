@@ -55,6 +55,7 @@ public class DatabaseLookupChain extends TransformConvertChain {
             String sortBy = (String) formAttributes.get("sortBy");
             Datasource datasource = datasourceService.one((long) databaseId);
             DatabaseMeta databaseMeta = new DatabaseMeta(datasource.getName(), DatasourceType.getValue(datasource.getCategory()), "JDBC", datasource.getHost(), datasource.getSchemaName(), datasource.getPort().toString(), datasource.getUsername(), Constant.PASSWORD_ENCRYPTED_PREFIX + Encr.encryptPassword(datasource.getPassword()));
+            databaseMeta.setStreamingResults(datasource.getUseCursor());
             String parameters = datasource.getParameter();
             if (StringUtils.hasLength(parameters)) {
                 List<Map<String, Object>> params = objectMapper.readValue(parameters, new TypeReference<List<Map<String, Object>>>() {

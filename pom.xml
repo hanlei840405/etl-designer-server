@@ -394,6 +394,13 @@
             <systemPath>${basedir}/ext-lib/ojdbc6.jar</systemPath>
         </dependency>
         <!-- oracle插件使用 -->
+        <!-- 数据库连接池 -->
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <!-- 数据库连接池 -->
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-boot-starter</artifactId>

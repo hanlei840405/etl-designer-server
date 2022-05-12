@@ -51,6 +51,7 @@ public class TableInputChain extends TransformConvertChain {
 
             Datasource datasource = datasourceService.one((long) databaseId);
             DatabaseMeta databaseMeta = new DatabaseMeta(datasource.getName(), DatasourceType.getValue(datasource.getCategory()), "JDBC", datasource.getHost(), datasource.getSchemaName(), datasource.getPort().toString(), datasource.getUsername(), Constant.PASSWORD_ENCRYPTED_PREFIX + Encr.encryptPassword(datasource.getPassword()));
+            databaseMeta.setStreamingResults(datasource.getUseCursor());
             Properties properties = new Properties();
             if (datasource.getUsePool()) {
                 databaseMeta.setUsingConnectionPool(true);
