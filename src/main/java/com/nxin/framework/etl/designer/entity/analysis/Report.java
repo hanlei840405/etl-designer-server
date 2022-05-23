@@ -24,8 +24,6 @@ public class Report extends BaseEntity implements Serializable {
     @Column
     private String chart;
     @Column
-    private String mode;
-    @Column
     private String description;
     @ManyToOne
     @JoinColumn(name = "tenant_id")

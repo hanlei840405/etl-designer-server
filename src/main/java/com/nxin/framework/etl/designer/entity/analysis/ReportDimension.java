@@ -17,8 +17,6 @@ public class ReportDimension extends BaseEntity implements Serializable {
     @Column
     private String name;
     @Column
-    private String expr;
-    @Column
     private String graph;
     @Column
     private String anchor;
