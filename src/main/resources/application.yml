@@ -81,10 +81,10 @@ spring:
             threadPriority: 5
             threadsInheritContextClassLoaderOfInitializingThread: true
   mail:
-    host: smtp.163.com
-    port: 465
-    username: jesse.18
-    password: luav179h?
+    host:
+    port:
+    username:
+    password:
     default-encoding: UTF-8
     properties:
       mail:
@@ -95,7 +95,7 @@ spring:
           starttls:
             enable: true
             required: true
-    from: jesse.18@163.com
+    from:
     forgotSubject: 新恩数造找回密码
   redis:
     host: 127.0.0.1
