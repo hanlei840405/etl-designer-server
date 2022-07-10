@@ -22,7 +22,7 @@ public class ReportDimensionService {
 
     public void save(Report report, List<ReportDimension> reportDimensionList, Tenant tenant) {
         if (!reportDimensionList.isEmpty()) {
-            Map<String, ReportDimension> records = reportDimensionList.stream().collect(Collectors.toMap(ReportDimension::getCode, reportDimension -> reportDimension, (k1, k2) -> k1, LinkedHashMap::new));
+            Map<String, ReportDimension> records = reportDimensionList.stream().collect(Collectors.toMap(reportDimension -> reportDimension.getCategory().concat("::").concat(reportDimension.getCode()), reportDimension -> reportDimension, (k1, k2) -> k1, LinkedHashMap::new));
             List<ReportDimension> persisted = reportDimensionRepository.findByReportIdAndStatus(report.getId(), Constant.ACTIVE);
             Map<String, ReportDimension> persistedMap = new LinkedHashMap<>();
             for (ReportDimension dimension : persisted) {
@@ -46,9 +46,9 @@ public class ReportDimensionService {
                 reportDimension.setStatus(Constant.ACTIVE);
                 reportDimension.setReport(report);
             });
-            insertOrUpdateList.forEach(iou -> {
+            for (ReportDimension iou : insertOrUpdateList) {
                 iou.setTenant(tenant);
-            });
+            }
             insertOrUpdateList.addAll(records.values());
             reportDimensionRepository.saveAll(insertOrUpdateList);
         }
