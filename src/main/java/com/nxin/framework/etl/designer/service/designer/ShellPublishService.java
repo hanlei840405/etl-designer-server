@@ -455,7 +455,7 @@ public class ShellPublishService {
                             if (nameElement != null && StringUtils.hasLength(nameElement.getText())) {
                                 String value = filenameElement.getTextTrim();
                                 if (StringUtils.hasLength(value)) {
-                                    String[] path = value.split("/");
+                                    String[] path = value.split(File.separator);
                                     filenameElement.setText(target + path[path.length - 1]);
                                 }
                             }
@@ -468,7 +468,7 @@ public class ShellPublishService {
                             if (StringUtils.hasLength(step.getText())) {
                                 String value = step.getTextTrim();
                                 if (StringUtils.hasLength(value)) {
-                                    String[] path = value.split("/");
+                                    String[] path = value.split(File.separator);
                                     step.setText(target + path[path.length - 1]);
                                 }
                             }
