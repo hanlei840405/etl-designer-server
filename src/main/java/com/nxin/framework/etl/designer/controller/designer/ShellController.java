@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -109,7 +110,7 @@ public class ShellController {
             Project project = projectService.one(shellDto.getProject().getId(), loginUser.getTenant().getId());
             if (project != null && project.getUsers().contains(loginUser)) {
                 Shell parent = null;
-                if (shellDto.getShell() != null && shellDto.getShell().getId() != null) {
+                if (shellDto.getShell() != null && shellDto.getShell().getId() != null && !Objects.equals(shellDto.getShell().getId(), shellDto.getId())) {
                     parent = shellService.one(shellDto.getShell().getId(), loginUser.getTenant().getId());
                 }
                 Shell persisted;
@@ -117,7 +118,7 @@ public class ShellController {
                     // 更新
                     persisted = shellService.one(shellDto.getId(), loginUser.getTenant().getId());
                     if (persisted != null && persisted.getProject() != null && persisted.getProject().getUsers().contains(loginUser)) {
-                        BeanUtils.copyProperties(shellDto, persisted, "id", "createTime", "creator", "modifier", "xml", "shell", "project");
+                        BeanUtils.copyProperties(shellDto, persisted, "id", "createTime", "creator", "modifier", "xml", "shell", "project", "status");
                         persisted.setProject(project);
                         persisted.setShell(parent);
                         persisted.setModifier(principal.getName());
