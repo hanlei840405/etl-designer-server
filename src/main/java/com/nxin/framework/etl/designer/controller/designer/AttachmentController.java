@@ -37,7 +37,7 @@ public class AttachmentController {
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile multipartFile, Principal principal) throws IOException {
         User loginUser = userService.one(principal.getName());
         StringBuilder builder = new StringBuilder(attachmentDir);
-        builder.append(loginUser.getTenant().getName()).append("/");
+        builder.append(loginUser.getTenant().getName()).append(File.separator);
         File directory = new File(builder.toString());
         if (!directory.exists()) {
             directory.mkdir();
@@ -59,7 +59,7 @@ public class AttachmentController {
             StringBuilder builder = new StringBuilder(attachmentDir);
             Map<String, String> json = objectMapper.readValue(crudDto.getPayload(), new TypeReference<Map<String, String>>() {
             });
-            String path = builder.append(loginUser.getTenant().getId()).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(json.get("env")).append("/").append(json.get("filename")).toString();
+            String path = builder.append(loginUser.getTenant().getId()).append(File.separator).append(shell.getProject().getId()).append(File.separator).append(shell.getId()).append(File.separator).append(json.get("env")).append(File.separator).append(json.get("filename")).toString();
             File file = new File(path);
             if (file.exists()) {
                 file.delete();
@@ -77,7 +77,7 @@ public class AttachmentController {
         Shell shell = shellService.one(crudDto.getId(), loginUser.getTenant().getId());
         if (shell != null && shell.getProject().getUsers().contains(loginUser)) {
             StringBuilder builder = new StringBuilder(attachmentDir);
-            String path = builder.append(loginUser.getTenant().getId()).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(crudDto.getPayload()).append("/").toString();
+            String path = builder.append(loginUser.getTenant().getId()).append(File.separator).append(shell.getProject().getId()).append(File.separator).append(shell.getId()).append(File.separator).append(crudDto.getPayload()).append(File.separator).toString();
             File folder = new File(path);
             if (!folder.exists()) {
                 folder.mkdirs();
@@ -101,7 +101,7 @@ public class AttachmentController {
         Shell shell = shellService.one(id, loginUser.getTenant().getId());
         if (shell != null && shell.getProject().getUsers().contains(loginUser)) {
             StringBuilder builder = new StringBuilder(attachmentDir);
-            String path = builder.append(loginUser.getTenant().getId()).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(env).append("/").append(filename).toString();
+            String path = builder.append(loginUser.getTenant().getId()).append(File.separator).append(shell.getProject().getId()).append(File.separator).append(shell.getId()).append(File.separator).append(env).append(File.separator).append(filename).toString();
             File file = new File(path);
             if (file.exists()) {
                 response.setContentType("application/octet-stream");

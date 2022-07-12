@@ -65,7 +65,7 @@ public class EtlGeneratorService {
         try {
             StringBuilder builder = new StringBuilder(attachmentDir);
             String env = prod ? "prod/" : "design/";
-            builder.append(tenantId).append("/").append(shell.getProject().getId()).append("/").append(shell.getId()).append("/").append(env);
+            builder.append(tenantId).append(File.separator).append(shell.getProject().getId()).append(File.separator).append(shell.getId()).append(File.separator).append(env);
             File folder = new File(builder.toString());
             if (!folder.exists()) {
                 folder.mkdirs();

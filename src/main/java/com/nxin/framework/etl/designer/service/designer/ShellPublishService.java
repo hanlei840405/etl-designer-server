@@ -177,12 +177,12 @@ public class ShellPublishService {
                 shellPublish.setReference(String.join(",", sprIds));
             }
             // 将脚本文件复制到publish目录下
-            File folder = new File(publishDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId() + "/" + shellPublish.getBusinessId());
+            File folder = new File(publishDir + tenant.getId() + File.separator + shell.getProject().getId() + File.separator + shell.getShell().getId() + File.separator + shellPublish.getBusinessId());
             if (!folder.exists()) {
                 folder.mkdirs();
             }
             String fileName = shell.getName().concat(shell.getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
-            String direct = publishDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId() + "/" + shellPublish.getBusinessId() + "/";
+            String direct = publishDir + tenant.getId() + File.separator + shell.getProject().getId() + File.separator + shell.getShell().getId() + File.separator + shellPublish.getBusinessId() + File.separator;
             File target = new File(direct + fileName);
             Files.copy(new File(shell.getXml()), target);
             modifyFileName(Arrays.asList(target.getCanonicalPath()), direct);
@@ -241,7 +241,7 @@ public class ShellPublishService {
             shellPublish.setTaskId(taskId);
         }
         // 创建生产环境目录
-        File folder = new File(productionDir + shellPublish.getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId());
+        File folder = new File(productionDir + shellPublish.getTenant().getId() + File.separator + shellPublish.getShell().getProject().getId() + File.separator + shellPublish.getShell().getId());
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -255,7 +255,7 @@ public class ShellPublishService {
                 try {
                     // 复制到生产环境
                     String fileName = spr.getShell().getName().concat(spr.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
-                    String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+                    String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + File.separator + shellPublish.getShell().getProject().getId() + File.separator + shellPublish.getShell().getId() + File.separator;
                     File target = new File(direct + fileName);
                     Files.copy(new File(spr.getXml()), target);
                     files.add(target.getCanonicalPath());
@@ -277,7 +277,7 @@ public class ShellPublishService {
         CronTrigger kettleTrigger = TriggerBuilder.newTrigger().withIdentity(taskId).withSchedule(cronScheduleBuilder).build();
         JobDetail jobDetail = JobBuilder.newJob(EtlTaskComp.class).withIdentity(taskId).build();
         String fileName = shellPublish.getShell().getName().concat(shellPublish.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
-        String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+        String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + File.separator + shellPublish.getShell().getProject().getId() + File.separator + shellPublish.getShell().getId() + File.separator;
         File target = new File(direct + fileName);
         Files.copy(new File(shellPublish.getXml()), target);
         files.add(target.getCanonicalPath());
@@ -340,7 +340,7 @@ public class ShellPublishService {
             shellPublish.setTaskId(taskId);
         }
         // 创建生产环境目录
-        File folder = new File(productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId());
+        File folder = new File(productionDir + shellPublish.getShell().getProject().getTenant().getId() + File.separator + shellPublish.getShell().getProject().getId() + File.separator + shellPublish.getShell().getId());
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -354,7 +354,7 @@ public class ShellPublishService {
                 try {
                     // 复制到生产环境
                     String fileName = spr.getShell().getName().concat(spr.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
-                    String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+                    String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + File.separator + shellPublish.getShell().getProject().getId() + File.separator + shellPublish.getShell().getId() + File.separator;
                     File target = new File(direct + fileName);
                     Files.copy(new File(spr.getXml()), target);
                     files.add(target.getCanonicalPath());
@@ -366,7 +366,7 @@ public class ShellPublishService {
             referencedList.addAll(existedList);
         }
         String fileName = shellPublish.getShell().getName().concat(shellPublish.getShell().getCategory().equals(Constant.TRANSFORM) ? ".ktr" : ".kjb");
-        String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + "/" + shellPublish.getShell().getProject().getId() + "/" + shellPublish.getShell().getId() + "/";
+        String direct = productionDir + shellPublish.getShell().getProject().getTenant().getId() + File.separator + shellPublish.getShell().getProject().getId() + File.separator + shellPublish.getShell().getId() + File.separator;
         File target = new File(direct + fileName);
         Files.copy(new File(shellPublish.getXml()), target);
         files.add(target.getCanonicalPath());
@@ -455,7 +455,7 @@ public class ShellPublishService {
                             if (nameElement != null && StringUtils.hasLength(nameElement.getText())) {
                                 String value = filenameElement.getTextTrim();
                                 if (StringUtils.hasLength(value)) {
-                                    String[] path = value.split("/");
+                                    String[] path = value.split(File.separator);
                                     filenameElement.setText(target + path[path.length - 1]);
                                 }
                             }
@@ -468,7 +468,7 @@ public class ShellPublishService {
                             if (StringUtils.hasLength(step.getText())) {
                                 String value = step.getTextTrim();
                                 if (StringUtils.hasLength(value)) {
-                                    String[] path = value.split("/");
+                                    String[] path = value.split(File.separator);
                                     step.setText(target + path[path.length - 1]);
                                 }
                             }

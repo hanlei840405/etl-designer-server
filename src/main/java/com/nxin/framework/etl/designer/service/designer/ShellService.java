@@ -60,12 +60,12 @@ public class ShellService {
                         }
                     }
                     String xml = transMeta.getXML();
-                    String path = devDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId();
+                    String path = devDir + tenant.getId() + File.separator + shell.getProject().getId() + File.separator + shell.getShell().getId();
                     File folder = new File(path);
                     if (!folder.exists()) {
                         folder.mkdirs();
                     }
-                    File transFile = new File(path + "/" + shell.getName() + ".ktr");
+                    File transFile = new File(path + File.separator + shell.getName() + ".ktr");
                     Files.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xml).getBytes(StandardCharsets.UTF_8), transFile);
                     shell.setXml(transFile.getCanonicalPath());
                     shell.setReference((String) transResult.get("referenceIds"));
@@ -89,12 +89,12 @@ public class ShellService {
                         }
                     }
                     String xml = jobMeta.getXML();
-                    String path = devDir + tenant.getId() + "/" + shell.getProject().getId() + "/" + shell.getShell().getId();
+                    String path = devDir + tenant.getId() + File.separator + shell.getProject().getId() + File.separator + shell.getShell().getId();
                     File folder = new File(path);
                     if (!folder.exists()) {
                         folder.mkdirs();
                     }
-                    File jobFile = new File(path+ "/" + shell.getName() + ".kjb");
+                    File jobFile = new File(path+ File.separator + shell.getName() + ".kjb");
                     Files.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xml).getBytes(StandardCharsets.UTF_8), jobFile);
                     shell.setXml(jobFile.getCanonicalPath());
                     shell.setReference((String) jobResult.get("referenceIds"));
