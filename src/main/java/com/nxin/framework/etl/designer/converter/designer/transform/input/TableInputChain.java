@@ -16,18 +16,20 @@ import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.encryption.Encr;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.tableinput.TableInputMeta;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class TableInputChain extends TransformConvertChain {
-    private static final ThreadLocal<TableInputMeta> tableInputMeta = ThreadLocal.withInitial(TableInputMeta::new);
-    private static final ThreadLocal<String> previousStep = ThreadLocal.withInitial(String::new);
+    private static final Map<String, Object> callbackMap = new ConcurrentHashMap<>(0);
 
     @Override
     public ResponseMeta parse(mxCell cell, TransMeta transMeta) throws JsonProcessingException {
@@ -41,13 +43,14 @@ public class TableInputChain extends TransformConvertChain {
             boolean lazyConversionActive = (boolean) formAttributes.get("lazyConversionActive");
             boolean executeEachInputRow = (boolean) formAttributes.get("executeEachInputRow");
             boolean variableReplacementActive = (boolean) formAttributes.get("variableReplacementActive");
-            previousStep.set((String) formAttributes.get("lookupFromStepValue"));
+            String lookupFromStepValue = (String) formAttributes.get("lookupFromStepValue");
             int rowLimit = (int) formAttributes.get("rowLimit");
-            tableInputMeta.get().setSQL(sql);
-            tableInputMeta.get().setLazyConversionActive(lazyConversionActive);
-            tableInputMeta.get().setExecuteEachInputRow(executeEachInputRow);
-            tableInputMeta.get().setVariableReplacementActive(variableReplacementActive);
-            tableInputMeta.get().setRowLimit(String.valueOf(rowLimit));
+            TableInputMeta tableInputMeta = new TableInputMeta();
+            tableInputMeta.setSQL(sql);
+            tableInputMeta.setLazyConversionActive(lazyConversionActive);
+            tableInputMeta.setExecuteEachInputRow(executeEachInputRow);
+            tableInputMeta.setVariableReplacementActive(variableReplacementActive);
+            tableInputMeta.setRowLimit(String.valueOf(rowLimit));
 
             Datasource datasource = datasourceService.one((long) databaseId);
             DatabaseMeta databaseMeta = new DatabaseMeta(datasource.getName(), DatasourceType.getValue(datasource.getCategory()), "JDBC", datasource.getHost(), datasource.getSchemaName(), datasource.getPort().toString(), datasource.getUsername(), Constant.PASSWORD_ENCRYPTED_PREFIX + Encr.encryptPassword(datasource.getPassword()));
@@ -92,8 +95,14 @@ public class TableInputChain extends TransformConvertChain {
                 }
                 databaseMeta.setConnectionPoolingProperties(properties);
             }
-            tableInputMeta.get().setDatabaseMeta(databaseMeta);
-            StepMeta stepMeta = new StepMeta(stepName, tableInputMeta.get());
+            tableInputMeta.setDatabaseMeta(databaseMeta);
+            if (StringUtils.hasLength(lookupFromStepValue)) {
+                Map<String, Object> tableInputMetaMap = new HashMap<>(0);
+                tableInputMetaMap.put("stepMetaInterface", tableInputMeta);
+                tableInputMetaMap.put("previousStep", lookupFromStepValue);
+                callbackMap.put(stepName, tableInputMetaMap);
+            }
+            StepMeta stepMeta = new StepMeta(stepName, tableInputMeta);
             TransformConvertFactory.getTransformConvertChains().add(this);
             if (formAttributes.containsKey("distribute")) {
                 boolean distribute = (boolean) formAttributes.get("distribute");
@@ -110,8 +119,12 @@ public class TableInputChain extends TransformConvertChain {
 
     @Override
     public void callback(TransMeta transMeta, Map<String, String> idNameMapping) {
-        tableInputMeta.get().setLookupFromStep(transMeta.findStep(idNameMapping.get(previousStep.get())));
-        tableInputMeta.remove();
-        previousStep.remove();
+        for (Map.Entry<String, Object> entry : callbackMap.entrySet()) {
+            Map<String, Object> tableInputMetaMap = (Map<String, Object>) entry.getValue();
+            TableInputMeta tableInputMeta = (TableInputMeta) tableInputMetaMap.get("stepMetaInterface");
+            String previousStep = (String) tableInputMetaMap.get("previousStep");
+            tableInputMeta.setLookupFromStep(transMeta.findStep(idNameMapping.get(previousStep)));
+            callbackMap.remove(entry.getKey());
+        }
     }
 }

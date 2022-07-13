@@ -19,12 +19,11 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassDef;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class UserDefinedJavaClassChain extends TransformConvertChain {
-    private static final ThreadLocal<UserDefinedJavaClassMeta> userDefinedJavaClassMeta = ThreadLocal.withInitial(UserDefinedJavaClassMeta::new);
-    private static final ThreadLocal<Map<String, String>> previousStep = ThreadLocal.withInitial(HashMap::new);
-    private static final ThreadLocal<Map<String, String>> nextStep = ThreadLocal.withInitial(HashMap::new);
+    private static final Map<String, Object> callbackMap = new ConcurrentHashMap<>(0);
 
     @Override
     public ResponseMeta parse(mxCell cell, TransMeta transMeta) throws JsonProcessingException {
@@ -51,21 +50,29 @@ public class UserDefinedJavaClassChain extends TransformConvertChain {
             userDefinedJavaClassMeta.replaceFields(fieldInfos);
             userDefinedJavaClassMeta.getInfoStepDefinitions().clear();
             List<Map<String, String>> infoSteps = (List<Map<String, String>>) formAttributes.get("infoSteps");
-            for (Map<String, String> infoStep : infoSteps) {
-                InfoStepDefinition stepDefinition = new InfoStepDefinition();
-                previousStep.get().put(infoStep.get("tag"), infoStep.get("step"));
-                stepDefinition.tag = infoStep.get("tag");
-                stepDefinition.description = infoStep.get("description");
-                userDefinedJavaClassMeta.getInfoStepDefinitions().add(stepDefinition);
-            }
-            userDefinedJavaClassMeta.getTargetStepDefinitions().clear();
             List<Map<String, String>> targetSteps = (List<Map<String, String>>) formAttributes.get("targetSteps");
-            for (Map<String, String> targetStep : targetSteps) {
-                TargetStepDefinition stepDefinition = new TargetStepDefinition();
-                nextStep.get().put(targetStep.get("tag"), targetStep.get("step"));
-                stepDefinition.tag = targetStep.get("tag");
-                stepDefinition.description = targetStep.get("description");
-                userDefinedJavaClassMeta.getTargetStepDefinitions().add(stepDefinition);
+            if (!infoSteps.isEmpty() || !targetSteps.isEmpty()) {
+                Map<String, Object> userDefinedJavaClassMetaMap = new HashMap<>(0);
+                userDefinedJavaClassMetaMap.put("stepMetaInterface", userDefinedJavaClassDef);
+                Map<String, String> previousStepMap = new HashMap<>(0);
+                userDefinedJavaClassMetaMap.put("previousStep", previousStepMap);
+                for (Map<String, String> infoStep : infoSteps) {
+                    InfoStepDefinition stepDefinition = new InfoStepDefinition();
+                    previousStepMap.put(infoStep.get("tag"), infoStep.get("step"));
+                    stepDefinition.tag = infoStep.get("tag");
+                    stepDefinition.description = infoStep.get("description");
+                    userDefinedJavaClassMeta.getInfoStepDefinitions().add(stepDefinition);
+                }
+                userDefinedJavaClassMeta.getTargetStepDefinitions().clear();
+                Map<String, String> nextStepMap = new HashMap<>(0);
+                userDefinedJavaClassMetaMap.put("nextStep", nextStepMap);
+                for (Map<String, String> targetStep : targetSteps) {
+                    TargetStepDefinition stepDefinition = new TargetStepDefinition();
+                    nextStepMap.put(targetStep.get("tag"), targetStep.get("step"));
+                    stepDefinition.tag = targetStep.get("tag");
+                    stepDefinition.description = targetStep.get("description");
+                    userDefinedJavaClassMeta.getTargetStepDefinitions().add(stepDefinition);
+                }
             }
             TransformConvertFactory.getTransformConvertChains().add(this);
             StepMeta stepMeta = new StepMeta(stepName, userDefinedJavaClassMeta);
@@ -85,14 +92,18 @@ public class UserDefinedJavaClassChain extends TransformConvertChain {
 
     @Override
     public void callback(TransMeta transMeta, Map<String, String> idNameMapping) {
-        for (InfoStepDefinition infoStepDefinition : userDefinedJavaClassMeta.get().getInfoStepDefinitions()) {
-            infoStepDefinition.stepMeta = transMeta.findStep(idNameMapping.get(previousStep.get().get(infoStepDefinition.tag)));
+        for (Map.Entry<String, Object> entry : callbackMap.entrySet()) {
+            Map<String, Object> tableInputMetaMap = (Map<String, Object>) entry.getValue();
+            UserDefinedJavaClassMeta userDefinedJavaClassMeta = (UserDefinedJavaClassMeta) tableInputMetaMap.get("stepMetaInterface");
+            Map<String, String> previousStep = (Map<String, String>) tableInputMetaMap.get("previousStep");
+            Map<String, String> nextStep = (Map<String, String>) tableInputMetaMap.get("nextStep");
+            for (InfoStepDefinition infoStepDefinition : userDefinedJavaClassMeta.getInfoStepDefinitions()) {
+                infoStepDefinition.stepMeta = transMeta.findStep(idNameMapping.get(previousStep.get(infoStepDefinition.tag)));
+            }
+            for (TargetStepDefinition targetStepDefinition : userDefinedJavaClassMeta.getTargetStepDefinitions()) {
+                targetStepDefinition.stepMeta = transMeta.findStep(idNameMapping.get(nextStep.get(targetStepDefinition.tag)));
+            }
+            callbackMap.remove(entry.getKey());
         }
-        for (TargetStepDefinition targetStepDefinition : userDefinedJavaClassMeta.get().getTargetStepDefinitions()) {
-            targetStepDefinition.stepMeta = transMeta.findStep(idNameMapping.get(nextStep.get().get(targetStepDefinition.tag)));
-        }
-        userDefinedJavaClassMeta.remove();
-        previousStep.remove();
-        nextStep.remove();
     }
 }

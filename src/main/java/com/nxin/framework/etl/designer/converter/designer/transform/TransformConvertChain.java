@@ -9,14 +9,15 @@ import com.nxin.framework.etl.designer.service.designer.ShellService;
 import org.pentaho.di.trans.TransHopMeta;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.step.StepMetaInterface;
+import org.pentaho.di.trans.steps.tableinput.TableInputMeta;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class TransformConvertChain {
 
     protected ObjectMapper objectMapper = new ObjectMapper();
-
-    protected mxGraph graph = new mxGraph();
 
     protected TransformConvertChain next;
 

@@ -15,14 +15,16 @@ import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.switchcase.SwitchCaseMeta;
 import org.pentaho.di.trans.steps.switchcase.SwitchCaseTarget;
+import org.pentaho.di.trans.steps.tableinput.TableInputMeta;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class SwitchCaseChain extends TransformConvertChain {
-    private static final ThreadLocal<SwitchCaseMeta> switchCaseMeta = ThreadLocal.withInitial(SwitchCaseMeta::new);
+    private static final Map<String, Object> callbackMap = new ConcurrentHashMap<>(0);
 
     @Override
     public ResponseMeta parse(mxCell cell, TransMeta transMeta) throws JsonProcessingException {
@@ -47,16 +49,18 @@ public class SwitchCaseChain extends TransformConvertChain {
                 switchCaseTarget.caseValue = item.get("value");
                 switchCaseTargets.add(switchCaseTarget);
             }
-            switchCaseMeta.get().setFieldname(switchField);
-            switchCaseMeta.get().setContains(useStringIn);
-            switchCaseMeta.get().setCaseValueType(ValueMetaFactory.getIdForValueMeta(category));
-            switchCaseMeta.get().setCaseValueFormat(mask);
-            switchCaseMeta.get().setCaseValueDecimal(decimalSymbol);
-            switchCaseMeta.get().setCaseValueGroup(groupBy);
+            SwitchCaseMeta switchCaseMeta = new SwitchCaseMeta();
+            switchCaseMeta.setFieldname(switchField);
+            switchCaseMeta.setContains(useStringIn);
+            switchCaseMeta.setCaseValueType(ValueMetaFactory.getIdForValueMeta(category));
+            switchCaseMeta.setCaseValueFormat(mask);
+            switchCaseMeta.setCaseValueDecimal(decimalSymbol);
+            switchCaseMeta.setCaseValueGroup(groupBy);
             // 先使用ID存储步骤，在回调方法中再重置步骤名称
-            switchCaseMeta.get().setDefaultTargetStepname(defaultNextStep);
-            switchCaseMeta.get().setCaseTargets(switchCaseTargets);
-            StepMeta stepMeta = new StepMeta(stepName, switchCaseMeta.get());
+            switchCaseMeta.setDefaultTargetStepname(defaultNextStep);
+            switchCaseMeta.setCaseTargets(switchCaseTargets);
+            callbackMap.put(stepName, switchCaseMeta);
+            StepMeta stepMeta = new StepMeta(stepName, switchCaseMeta);
             TransformConvertFactory.getTransformConvertChains().add(this);
             if (formAttributes.containsKey("distribute")) {
                 boolean distribute = (boolean) formAttributes.get("distribute");
@@ -74,11 +78,14 @@ public class SwitchCaseChain extends TransformConvertChain {
 
     @Override
     public void callback(TransMeta transMeta, Map<String, String> idNameMapping) {
-        switchCaseMeta.get().setDefaultTargetStepname(idNameMapping.get(switchCaseMeta.get().getDefaultTargetStepname()));
-        switchCaseMeta.get().getCaseTargets().forEach(target -> {
-            target.caseTargetStepname = idNameMapping.get(target.caseTargetStepname);
-        });
-        switchCaseMeta.get().searchInfoAndTargetSteps(transMeta.getSteps());
-        switchCaseMeta.remove();
+        for (Map.Entry<String, Object> entry : callbackMap.entrySet()) {
+            SwitchCaseMeta switchCaseMeta = (SwitchCaseMeta) entry.getValue();
+            switchCaseMeta.setDefaultTargetStepname(idNameMapping.get(switchCaseMeta.getDefaultTargetStepname()));
+            switchCaseMeta.getCaseTargets().forEach(target -> {
+                target.caseTargetStepname = idNameMapping.get(target.caseTargetStepname);
+            });
+            switchCaseMeta.searchInfoAndTargetSteps(transMeta.getSteps());
+            callbackMap.remove(entry.getKey());
+        }
     }
 }
