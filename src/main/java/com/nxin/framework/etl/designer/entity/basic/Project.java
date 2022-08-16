@@ -18,6 +18,9 @@ public class Project extends BaseEntity implements Serializable {
     @Column
     private String description;
     @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    @ManyToOne
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
     @ManyToMany(cascade = CascadeType.MERGE)

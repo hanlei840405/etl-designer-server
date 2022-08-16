@@ -234,7 +234,7 @@ CREATE TABLE `basic_project` (
   `last_update_time` datetime DEFAULT NULL,
   `modifier` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `scope` varchar(255) DEFAULT NULL,
+  `user_id` bigint DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   `version` int NOT NULL,
   `modify_time` datetime DEFAULT NULL,

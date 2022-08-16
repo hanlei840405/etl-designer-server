@@ -71,7 +71,7 @@ public class ProjectController {
         if (project.getId() != null) {
             persisted = projectService.one(project.getId(), loginUser.getTenant().getId());
             if (persisted != null && persisted.getUsers().contains(loginUser)) {
-                BeanUtils.copyProperties(project, persisted, "id", "tenant", "creator", "createTime", "status", "users");
+                BeanUtils.copyProperties(project, persisted, "id", "user", "tenant", "creator", "createTime", "status", "users");
                 persisted.setModifier(principal.getName());
                 persisted = projectService.save(persisted, loginUser.getTenant());
             } else {
@@ -80,6 +80,7 @@ public class ProjectController {
         } else {
             persisted = new Project();
             BeanUtils.copyProperties(project, persisted, "users");
+            persisted.setUser(loginUser);
             persisted.setStatus(Constant.ACTIVE);
             persisted.setCreator(principal.getName());
             persisted.getUsers().add(loginUser);
@@ -94,6 +95,9 @@ public class ProjectController {
         User loginUser = userService.one(principal.getName());
         Project persisted = projectService.one(id, loginUser.getTenant().getId());
         if (persisted != null && persisted.getUsers().contains(loginUser)) {
+            if (loginUser.equals(persisted.getUser())) {
+                return ResponseEntity.status(Constant.EXCEPTION_OWNER).build();
+            }
             persisted.setModifier(principal.getName());
             persisted.setStatus(Constant.INACTIVE);
             persisted = projectService.delete(persisted);
