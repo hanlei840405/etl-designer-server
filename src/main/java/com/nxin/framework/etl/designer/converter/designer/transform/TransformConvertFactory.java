@@ -5,6 +5,7 @@ import com.nxin.framework.etl.designer.converter.designer.transform.convert.*;
 import com.nxin.framework.etl.designer.converter.designer.transform.input.*;
 import com.nxin.framework.etl.designer.converter.designer.transform.lookup.DatabaseJoinChain;
 import com.nxin.framework.etl.designer.converter.designer.transform.lookup.DatabaseLookupChain;
+import com.nxin.framework.etl.designer.converter.designer.transform.lookup.MultiMergeJoinChain;
 import com.nxin.framework.etl.designer.converter.designer.transform.lookup.RestChain;
 import com.nxin.framework.etl.designer.converter.designer.transform.output.*;
 import com.nxin.framework.etl.designer.converter.designer.transform.process.*;
@@ -81,6 +82,7 @@ public class TransformConvertFactory extends ConvertFactory {
         TransformConvertChain rowsToResultChain = new RowsToResultChain();
         TransformConvertChain rowsFromResultChain = new RowsFromResultChain();
         TransformConvertChain restChain = new RestChain();
+        TransformConvertChain multiMergeJoinChain = new MultiMergeJoinChain();
         TransformConvertChain endChain = new EndChain();
         tableInputChain.setDatasourceService(datasourceService);
         tableOutputChain.setDatasourceService(datasourceService);
@@ -140,7 +142,8 @@ public class TransformConvertFactory extends ConvertFactory {
         mongodbOutputChain.setNext(rowsToResultChain);
         rowsToResultChain.setNext(rowsFromResultChain);
         rowsFromResultChain.setNext(restChain);
-        restChain.setNext(transHopChain);
+        restChain.setNext(multiMergeJoinChain);
+        multiMergeJoinChain.setNext(transHopChain);
         transHopChain.setNext(endChain);
         TransformConvertFactory.beginChain = beginChain;
     }

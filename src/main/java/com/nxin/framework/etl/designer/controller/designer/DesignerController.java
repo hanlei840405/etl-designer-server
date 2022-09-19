@@ -1,5 +1,6 @@
 package com.nxin.framework.etl.designer.controller.designer;
 
+import com.google.common.io.Files;
 import com.nxin.framework.etl.designer.dto.CrudDto;
 import com.nxin.framework.etl.designer.entity.basic.User;
 import com.nxin.framework.etl.designer.entity.designer.RunningProcess;
@@ -12,6 +13,7 @@ import com.nxin.framework.etl.designer.service.log.LogService;
 import com.nxin.framework.etl.designer.vo.log.StepLogVo;
 import com.nxin.framework.etl.designer.vo.log.TransformLogVo;
 import lombok.extern.slf4j.Slf4j;
+import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogLevel;
 import org.pentaho.di.core.logging.LoggingObjectType;
 import org.pentaho.di.core.logging.LoggingRegistry;
@@ -33,6 +35,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -68,7 +73,7 @@ public class DesignerController {
     private static final String CHANNEL_TYPE_JOB = "JOB";
 
     @PostMapping("/execute/{id}")
-    public ResponseEntity<Map<String, Object>> execute(@PathVariable("id") String id, @RequestBody Shell shell, Principal principal) {
+    public ResponseEntity<Map<String, Object>> execute(@PathVariable("id") String id, @RequestBody Shell shell, Principal principal) throws IOException, KettleException {
         User loginUser = userService.one(principal.getName());
         Shell existed = shellService.one(shell.getId(), loginUser.getTenant().getId());
         if (existed != null && existed.getProject().getUsers().contains(loginUser)) {
@@ -86,13 +91,16 @@ public class DesignerController {
                 transExecutionConfiguration.setLogLevel(LogLevel.BASIC);
                 Map<String, Object> transMap = etlGeneratorService.getTransMeta(shell, loginUser.getTenant().getId(), false);
                 TransMeta transMeta = (TransMeta) transMap.get("transMeta");
+                File tempFile = File.createTempFile(transMeta.getName(), "ktr", null);
+                Files.write(transMeta.getXML().getBytes(StandardCharsets.UTF_8), tempFile);
+                transMeta = new TransMeta(tempFile.getPath());
                 TransConfiguration transConfiguration = new TransConfiguration(transMeta, transExecutionConfiguration);
                 spoonLoggingObject.setLogLevel(transExecutionConfiguration.getLogLevel());
                 Trans trans = new Trans(transMeta, spoonLoggingObject);
                 try {
                     trans.injectVariables(transConfiguration.getTransExecutionConfiguration().getVariables());
                     trans.setGatheringMetrics(true);
-                    transMeta.getXML();
+
                     // 空参调用
                     trans.execute(new String[]{});
                     taskExecutor.execute(() -> {
@@ -121,10 +129,10 @@ public class DesignerController {
                     runningProcessService.save(runningProcess, loginUser.getTenant());
                     return ResponseEntity.ok(Collections.EMPTY_MAP);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                     List<String> logChannelIds = loggingRegistry.getLogChannelChildren(trans.getLogChannelId());
                     Map<String, Object> error = this.fetchLogs(logChannelIds);
-                    error.put("error", e.toString() + "\r\n" + e.getStackTrace()[0].toString());
+                    error.put("error", e + "\r\n" + e.getStackTrace()[0].toString());
                     simpMessagingTemplate.convertAndSend(id, error);
                     return ResponseEntity.status(EXCEPTION_ETL_GRAMMAR).body(error);
                 }

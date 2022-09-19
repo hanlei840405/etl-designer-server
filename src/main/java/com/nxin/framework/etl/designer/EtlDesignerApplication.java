@@ -29,7 +29,7 @@ public class EtlDesignerApplication {
 //        StepPluginType.getInstance().getPluginFolders().add(new PluginFolder("classpath:plugins", false, true));
         KettleEnvironment.init();
         PluginRegistry.addPluginType( StepPluginType.getInstance() );
-        PluginRegistry.init();
+        PluginRegistry.init(false);
         if ( !Props.isInitialized() ) {
             Props.init( 0 );
         }
